@@ -284,16 +284,22 @@ class Product extends Model
     {
         // Find the related custom value
         $customValues = CustomValueModel::where('product_id', '=', $this->id)->get();
-        
+
         $customValues->each(function ($value) {
             // Delete relation
             $relation = DB::table('tiipiik_catalog_csf_csv')
                 ->where('custom_value_id', '=', $value->id)
                 ->delete();
-                
+
             // Delete custom value
             CustomValueModel::find($value->id)->delete();
         });
+
+        // Delete Images from 'System\Models\File'
+        foreach ($this->featured_images as $image) {
+            $image->delete();
+        }
+
     }
     
     public function updateCustomFieldsAndValues($context)
