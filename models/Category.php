@@ -44,7 +44,7 @@ class Category extends Model
     ];
 
     public $attachOne = [
-        'cover' => ['System\Models\File']
+        'cover' => ['System\Models\File', 'delete' => true]
     ];
     
      /**
@@ -309,5 +309,34 @@ class Category extends Model
         $url = CmsPage::url($page->getBaseFileName(), [$paramName => $category->slug]);
 
         return $url;
+    }
+
+    public static function hasChildren($categoryUrl)
+    {
+        $category = self::whereSlug($categoryUrl)->firstOrFail();
+
+        $children = self::whereParentId($category->id)->get();
+
+        if (isset($children) && sizeof($children) != 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Does the category is parent of active category ?
+     */
+    public static function hasActiveChild($categoryId, $activeCategorySlug)
+    {
+        //dump($categoryId . ' / ' . $activeCategorySlug);
+        $activeCategoryHasParent = self::whereSlug($activeCategorySlug)->whereParentId($categoryId)->first();
+
+        if (isset($activeCategoryHasParent) && sizeof($activeCategoryHasParent) != 0) {
+            //dump($activeCategoryHasParent);
+            return true;
+        }
+
+        return false;
     }
 }
